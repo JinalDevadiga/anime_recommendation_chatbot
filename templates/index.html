@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  
+    <style>
+        /* CSS for the chatbot container */
+        .chat-container {
+
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+
+        /* CSS for the chat messages */
+        .chat-message {
+            margin: 10px 0;
+        }
+
+        .user-message {
+            text-align: right;
+            color: #fff;
+            background-color: blue;
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        .bot-message {
+            text-align: left;
+            color: #fff;
+            background-color: green;
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        .message {
+            margin: 10px 0;
+            text-align: left;
+            color: #fff;
+            border-radius: 10px;
+            padding: 10px;
+            width: fit-content;
+            max-width: 70%;
+        }
+
+        /* CSS for the input field */
+        .user-input {
+            padding: 10px;
+            border: none;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+        .custom-button[disabled] {
+            background-color: #a9a9a9; /* Change to your desired background color */
+            color: #333; /* Change to your desired text color */
+            /* Add any other styles you want for the disabled button */
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container mb-3" id="chat-container">
+        <div class="message bg-success" id="bot">Hi there! How can I assist you today?</div>
+    </div>
+    
+    <!-- <input type="text" class="user-input" id="user-input" placeholder="Ask a question..."> -->
+    <div class="input-group mb-1 fixed-bottom">
+        <input type="text" class="form-control" placeholder="Ask a question..." aria-label="Recipient's username" aria-describedby="button-addon2" id="user-input">
+        <button class="btn btn-outline-secondary btn-success text-light custom-button" type="button" id="enter">Button</button>
+    </div>
+
+    <script>
+        // JavaScript for handling user input and bot responses
+        const chatContainer = document.getElementById('chat-container');
+        const userInput = document.getElementById('user-input');
+
+        // Function to add a user message to the chat
+        function addUserMessage(message) {
+            const userMessage = document.createElement('div');
+            userMessage.classList.add('message');
+            userMessage.classList.add('bg-primary');
+            userMessage.textContent = message;
+            userMessage.style.textAlign = 'right';
+            userMessage.style.marginLeft = 'auto';
+            chatContainer.appendChild(userMessage);
+        }
+
+        // Function to add a bot message to the chat
+        function addBotMessage(message) {
+            const botMessage = document.createElement('div');
+            botMessage.classList.add('message');
+            // botMessage.textContent = message;
+            botMessage.classList.add('bg-success');
+            // chatContainer.appendChild(botMessage);
+
+            // Split the message into an array of lines
+            const messageLines = message.split('\n');
+
+            // Create a <p> element for each line and append it to the botMessage div
+            messageLines.forEach(line => {
+                const paragraph = document.createElement('p');
+                paragraph.textContent = line;
+                botMessage.appendChild(paragraph);
+            });
+
+            chatContainer.appendChild(botMessage);
+        }
+
+        // Function to handle user input and bot responses
+        // function handleUserInput() {
+        //     const userMessage = userInput.value;
+        //     if (userMessage.trim() === '') return;
+            
+        //     addUserMessage(userMessage);
+        //     userInput.value = ''; // Clear the input field
+        //     console.log(answer);
+        //     // Simulate a bot response (you can replace this with actual logic to get bot responses)
+        //     setTimeout(() => {
+        //         const botResponse = "I received your message: " + answer;
+        //         addBotMessage(botResponse);
+        //     }, 500);
+        // }
+
+        // Handle user input when Enter key is pressed
+        userInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter'  && !event.shiftKey) {
+                animeAnswer();
+            } else if (event.key === 'Enter' && event.shiftKey) {
+                // Handle Shift + Enter key press
+                const textarea = event.target;
+                const start = textarea.selectionStart;
+                const end = textarea.selectionEnd;
+                const value = textarea.value;
+
+                // Insert a new line at the cursor position
+                textarea.value = value.substring(0, start) + '\n' + value.substring(end);
+                
+                // Move the cursor to the new line
+                textarea.selectionStart = textarea.selectionEnd = start + 1;
+
+                event.preventDefault(); // Prevents the default behavior of the Enter key
+            }
+        });
+
+        document.getElementById('enter').addEventListener('click', function() {
+            animeAnswer();
+        });
+
+        function animeAnswer() {
+            document.getElementById('enter').disabled = true;
+            userInput.disabled = true;
+            const userMessage = userInput.value;
+            if (userMessage.trim() === '') return;
+            addUserMessage(userMessage);
+            window.scrollTo(0, document.body.scrollHeight);
+            userInput.value = ''; // Clear the input field
+            fetch('/animeRecommeder', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ parameter: userMessage}),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json()
+            })
+            .then( data => {
+                console.log(data['bot_response'])
+                const botResponse = data['bot_response'];
+                addBotMessage(botResponse);
+                window.scrollTo(0, document.body.scrollHeight);
+                userInput.disabled = false;
+                document.getElementById('enter').disabled = false;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+</body>
+</html>
