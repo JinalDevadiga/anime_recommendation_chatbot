@@ -60,11 +60,16 @@
     </style>
 </head>
 <body>
-    <div class="chat-container mb-3" id="chat-container">
+    <nav class="navbar fixed-top bg-success">
+        <div class="container-fluid text-center">
+                <h3 class="mx-auto text-light">Anime Recommender Bot</h3>
+        </div>
+    </nav>
+
+    <div class="mt-5 chat-container mb-3" id="chat-container">
         <div class="message bg-success" id="bot">Hi there! How can I assist you today?</div>
     </div>
-    
-    <!-- <input type="text" class="user-input" id="user-input" placeholder="Ask a question..."> -->
+
     <div class="input-group mb-1 fixed-bottom">
         <input type="text" class="form-control" placeholder="Ask a question..." aria-label="Recipient's username" aria-describedby="button-addon2" id="user-input">
         <button class="btn btn-outline-secondary btn-success text-light custom-button" type="button" id="enter">Submit</button>
